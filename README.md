@@ -1,6 +1,23 @@
 # scripts
 
-my one off scripts and tools — a general code dump. most are created with AI
+Scripts, tools, and technical docs — one-off utilities, visualizers, and reference whitepapers.
+
+## docs
+
+Technical writing that doesn't belong on the portfolio but is worth keeping somewhere searchable.
+
+| Title | Tags |
+|---|---|
+| [Vendor-Kernel Preservation in Qualcomm-Based SBCs](https://logannightingale.com/papers/qualcomm-kernel.html) | Embedded · Linux · Qualcomm · SBC |
+| [Phasing, Math, and Signals — Ham Extra Learner Manual](https://logannightingale.com/papers/ham-radio-math.pdf) | Ham Radio · RF · Math · Extra Class |
+| [Pure Arch on an Older Dell Latitude](https://logannightingale.com/papers/arch-dell-latitude.html) | Linux · Arch · Security · Systems |
+| [HP LaserJet P1005 on Arch Linux](https://logannightingale.com/papers/hp-p1005-arch.html) | Linux · Arch · Hardware · CUPS |
+| [T1D Field Management and Insulin Pen Survival Guide v2](https://logannightingale.com/papers/t1d-field-guide.pdf) | Medical · Field Guide · T1D · Wilderness |
+| [Evaluating Common AI APIs and Models](https://logannightingale.com/papers/ai-apis-report.pdf) | AI · LLMs · APIs · Reference |
+
+---
+
+## scripts
 
 ### pwm_signal_gui.py
 PWM oscilloscope-style visualizer (tkinter), built for an automotive class. Draws a live square wave with adjustable frequency and duty cycle so you can see how each parameter changes the signal shape in real time.
