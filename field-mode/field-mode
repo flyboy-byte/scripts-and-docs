@@ -21,6 +21,8 @@ get_max_brightness() {
 }
 
 enable_field_mode() {
+    local wifi_opt="${1:-powersave}"
+
     # Save current brightness
     local bri
     bri=$(get_brightness)
@@ -29,8 +31,14 @@ enable_field_mode() {
     # CPU: powersave
     echo powersave | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null
 
-    # WiFi power save on
-    [ -n "$WIFI_IF" ] && sudo iw dev "$WIFI_IF" set power_save on 2>/dev/null
+    # WiFi
+    if [ "$wifi_opt" = "wifi-off" ]; then
+        [ -n "$WIFI_IF" ] && sudo ip link set "$WIFI_IF" down 2>/dev/null
+        echo "wifi-off" > "$(dirname "$STATE_FILE")/saved_wifi"
+    else
+        [ -n "$WIFI_IF" ] && sudo iw dev "$WIFI_IF" set power_save on 2>/dev/null
+        echo "powersave" > "$(dirname "$STATE_FILE")/saved_wifi"
+    fi
 
     # Dim screen to 40%
     local max
@@ -44,14 +52,23 @@ enable_field_mode() {
     sudo tlp bat 2>/dev/null
 
     echo "on" > "$STATE_FILE"
-    notify "ON — CPU: powersave, WiFi: power save, brightness: 40%"
+    if [ "$wifi_opt" = "wifi-off" ]; then
+        notify "ON — CPU: powersave, WiFi: OFF, brightness: 40%"
+    else
+        notify "ON — CPU: powersave, WiFi: power save, brightness: 40%"
+    fi
 }
 
 disable_field_mode() {
     # CPU: back to schedutil
     echo schedutil | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null
 
-    # WiFi power save off
+    # WiFi restore
+    local saved_wifi
+    saved_wifi=$(cat "$(dirname "$STATE_FILE")/saved_wifi" 2>/dev/null || echo "powersave")
+    if [ "$saved_wifi" = "wifi-off" ]; then
+        [ -n "$WIFI_IF" ] && sudo ip link set "$WIFI_IF" up 2>/dev/null
+    fi
     [ -n "$WIFI_IF" ] && sudo iw dev "$WIFI_IF" set power_save off 2>/dev/null
 
     # Restore brightness
@@ -66,10 +83,34 @@ disable_field_mode() {
     notify "OFF — back to normal"
 }
 
-case "${1:-toggle}" in
-    on)  enable_field_mode ;;
+show_help() {
+    cat <<EOF
+field-mode — battery-saving toggle for field/ham radio use
+
+Usage:
+  field-mode               show this help
+  field-mode on            enable field mode (WiFi power save)
+  field-mode on wifi-off   enable field mode (WiFi completely off)
+  field-mode off           disable field mode, restore everything
+  field-mode toggle        toggle on/off (uses last WiFi setting)
+  field-mode status        show current state
+  field-mode help          show this help
+
+What it does:
+  CPU governor   schedutil → powersave
+  WiFi           power save on  (or interface down with wifi-off)
+  Brightness     dims to 40% of max, restores on off
+  TLP            forces battery profile, reverts to auto on off
+EOF
+}
+
+case "${1:-help}" in
+    on)  enable_field_mode "${2:-}" ;;
     off) disable_field_mode ;;
-    status) echo "Field mode: $CURRENT (wifi: ${WIFI_IF:-unknown})" ;;
+    status)
+        saved_wifi=$(cat "$(dirname "$STATE_FILE")/saved_wifi" 2>/dev/null || echo "powersave")
+        echo "Field mode: $CURRENT (wifi: ${WIFI_IF:-unknown}, wifi-mode: $saved_wifi)"
+        ;;
     toggle)
         if [ "$CURRENT" = "on" ]; then
             disable_field_mode
@@ -77,8 +118,11 @@ case "${1:-toggle}" in
             enable_field_mode
         fi
         ;;
+    help|--help|-h) show_help ;;
     *)
-        echo "Usage: field-mode [on|off|toggle|status]"
+        echo "Unknown option: $1"
+        echo
+        show_help
         exit 1
         ;;
 esac

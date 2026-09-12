@@ -1,5 +1,5 @@
 # /etc/sudoers.d/field-mode
-# Allows field-mode to toggle CPU governor, WiFi power save, and TLP
+# Allows field-mode to toggle CPU governor, WiFi power save/off, and TLP
 # without a password prompt. Install with:
 #   sudo visudo -c -f sudoers.example && sudo cp sudoers.example /etc/sudoers.d/field-mode
 #
@@ -7,5 +7,7 @@
 
 logan ALL=(ALL) NOPASSWD: /usr/bin/tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 logan ALL=(ALL) NOPASSWD: /usr/bin/iw dev * set power_save *
+logan ALL=(ALL) NOPASSWD: /sbin/ip link set * up
+logan ALL=(ALL) NOPASSWD: /sbin/ip link set * down
 logan ALL=(ALL) NOPASSWD: /usr/bin/tlp bat
 logan ALL=(ALL) NOPASSWD: /usr/bin/tlp auto
