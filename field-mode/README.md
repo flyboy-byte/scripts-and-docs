@@ -7,20 +7,24 @@ One command flips CPU governor, WiFi power save, screen brightness, and TLP batt
 ## Usage
 
 ```bash
-field-mode          # toggle on/off
-field-mode on
-field-mode off
-field-mode status
+field-mode               # show help
+field-mode on            # enable (WiFi power save)
+field-mode on wifi-off   # enable (WiFi interface down)
+field-mode off           # disable, restore everything
+field-mode status        # show current state
+field-mode help          # show help
 ```
 
 ## What it does
 
-| Setting | Field mode ON | Field mode OFF |
-|---|---|---|
-| CPU governor | `powersave` | `schedutil` |
-| WiFi power save | on | off |
-| Screen brightness | 40% | restored to previous |
-| TLP profile | forced battery | auto-detect |
+| Setting | Field mode ON | `on wifi-off` | Field mode OFF |
+|---|---|---|---|
+| CPU governor | `powersave` | `powersave` | `schedutil` |
+| WiFi | power save on | interface down | restored |
+| Screen brightness | 40% | 40% | restored to previous |
+| TLP profile | forced battery | forced battery | auto-detect |
+
+Use `wifi-off` when you don't need internet at all (pure radio logging) — it saves more power than power save alone.
 
 ## Setup
 

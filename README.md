@@ -119,13 +119,14 @@ Single-file HTML tool (no build step, no server) that turns raw research text in
 - **Standalone**: open the file in any browser, paste your own Anthropic API key (`sk-ant-...`), then paste your text and click "Format as white paper." The key is only used for that one request and is never stored or sent anywhere else.
 
 ### field-mode/field-mode
-Battery-saving toggle for LXQt field use — ham radio logging, outdoor work, anywhere you're off AC. One command flips CPU governor, WiFi power save, screen brightness (dims to 40%), and TLP battery profile. Toggle off to restore everything.
+Battery-saving toggle for LXQt field use — ham radio logging, outdoor work, anywhere you're off AC. One command flips CPU governor, WiFi, screen brightness (dims to 40%), and TLP battery profile. Toggle off to restore everything.
 
 ```bash
-field-mode          # toggle on/off
-field-mode on
-field-mode off
-field-mode status
+field-mode               # show help
+field-mode on            # enable (WiFi power save)
+field-mode on wifi-off   # enable (WiFi interface down — for pure radio use)
+field-mode off           # disable, restore everything
+field-mode status        # show current state
 ```
 
 See `field-mode/sudoers.example` for the passwordless sudo rule and `field-mode/README.md` for full setup.
