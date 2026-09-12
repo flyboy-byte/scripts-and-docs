@@ -118,6 +118,18 @@ Single-file HTML tool (no build step, no server) that turns raw research text in
 - **Inside claude.ai**: paste the file in as an artifact, leave the API key field blank — your session handles auth.
 - **Standalone**: open the file in any browser, paste your own Anthropic API key (`sk-ant-...`), then paste your text and click "Format as white paper." The key is only used for that one request and is never stored or sent anywhere else.
 
+### field-mode/field-mode
+Battery-saving toggle for LXQt field use — ham radio logging, outdoor work, anywhere you're off AC. One command flips CPU governor, WiFi power save, screen brightness (dims to 40%), and TLP battery profile. Toggle off to restore everything.
+
+```bash
+field-mode          # toggle on/off
+field-mode on
+field-mode off
+field-mode status
+```
+
+See `field-mode/sudoers.example` for the passwordless sudo rule and `field-mode/README.md` for full setup.
+
 ### pkgfilter/pkgfilter.py
 Arch Linux bloat hunter. First run queries every installed package via `pacman -Qq`/`-Qi` (name + installed size) and saves it as `revision1.txt`. Each subsequent run loads the latest revision, lets you strip out packages by keyword (e.g. `plasma`, `kde`, `qt`) so what's left is the stuff you don't recognize, then optionally applies a minimum-size filter to cut anything too small to bother removing. Every pass saves a new `revisionN.txt`, so you can diff revisions to see exactly what each pass removed. Can also scan the filesystem outside of packages for the largest directories and files (top 20 of each), useful for hunting disk hogs like the pacman package cache.
 
