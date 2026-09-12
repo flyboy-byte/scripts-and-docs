@@ -1,0 +1,84 @@
+#!/bin/bash
+# field-mode: toggle battery-saving mode for field/ham radio use
+# Toggle: CPU governor, WiFi power save, screen brightness
+
+STATE_FILE="$HOME/.local/share/field-mode/state"
+WIFI_IF=$(ip link | grep -E '^[0-9]+: w' | awk '{print $2}' | tr -d : | head -1)
+
+mkdir -p "$(dirname "$STATE_FILE")"
+CURRENT=$(cat "$STATE_FILE" 2>/dev/null || echo "off")
+
+notify() {
+    notify-send -i battery "Field Mode" "$1" 2>/dev/null || echo "$1"
+}
+
+get_brightness() {
+    brightnessctl get 2>/dev/null || cat /sys/class/backlight/*/brightness 2>/dev/null | head -1
+}
+
+get_max_brightness() {
+    brightnessctl max 2>/dev/null || cat /sys/class/backlight/*/max_brightness 2>/dev/null | head -1
+}
+
+enable_field_mode() {
+    # Save current brightness
+    local bri
+    bri=$(get_brightness)
+    echo "$bri" > "$(dirname "$STATE_FILE")/saved_brightness"
+
+    # CPU: powersave
+    echo powersave | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null
+
+    # WiFi power save on
+    [ -n "$WIFI_IF" ] && sudo iw dev "$WIFI_IF" set power_save on 2>/dev/null
+
+    # Dim screen to 40%
+    local max
+    max=$(get_max_brightness)
+    if [ -n "$max" ] && [ "$max" -gt 0 ]; then
+        local target=$(( max * 40 / 100 ))
+        brightnessctl set "$target" 2>/dev/null
+    fi
+
+    # TLP: force battery mode
+    sudo tlp bat 2>/dev/null
+
+    echo "on" > "$STATE_FILE"
+    notify "ON — CPU: powersave, WiFi: power save, brightness: 40%"
+}
+
+disable_field_mode() {
+    # CPU: back to schedutil
+    echo schedutil | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null
+
+    # WiFi power save off
+    [ -n "$WIFI_IF" ] && sudo iw dev "$WIFI_IF" set power_save off 2>/dev/null
+
+    # Restore brightness
+    local saved
+    saved=$(cat "$(dirname "$STATE_FILE")/saved_brightness" 2>/dev/null)
+    [ -n "$saved" ] && brightnessctl set "$saved" 2>/dev/null
+
+    # TLP: back to AC mode detection
+    sudo tlp auto 2>/dev/null
+
+    echo "off" > "$STATE_FILE"
+    notify "OFF — back to normal"
+}
+
+case "${1:-toggle}" in
+    on)  enable_field_mode ;;
+    off) disable_field_mode ;;
+    status) echo "Field mode: $CURRENT (wifi: ${WIFI_IF:-unknown})" ;;
+    toggle)
+        if [ "$CURRENT" = "on" ]; then
+            disable_field_mode
+        else
+            enable_field_mode
+        fi
+        ;;
+    *)
+        echo "Usage: field-mode [on|off|toggle|status]"
+        exit 1
+        ;;
+esac
